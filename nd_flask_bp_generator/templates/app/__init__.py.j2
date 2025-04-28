@@ -1,0 +1,33 @@
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+from flask_marshmallow import Marshmallow
+from app.core.config import Config
+
+db = SQLAlchemy()
+ma = Marshmallow()
+
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(config_class)
+
+    # Initialize extensions
+    db.init_app(app)
+    ma.init_app(app)
+
+    # Initialize API v1
+    from app.api.v1 import init_app as init_v1
+    init_v1(app)
+
+    # Add route debugger
+    @app.route('/debug/routes')
+    def list_routes():
+        routes = []
+        for rule in app.url_map.iter_rules():
+            routes.append({
+                'endpoint': rule.endpoint,
+                'methods': list(rule.methods),
+                'url': str(rule)
+            })
+        return {'routes': routes}
+
+    return app 

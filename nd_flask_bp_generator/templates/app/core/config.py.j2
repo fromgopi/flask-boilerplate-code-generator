@@ -1,0 +1,109 @@
+import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Base directory
+BASE_DIR = Path(__file__).parent.parent.parent
+
+class Config:
+    """Base configuration class."""
+    # Flask settings
+    SECRET_KEY = os.getenv('SECRET_KEY', 'your-secret-key-here')
+    DEBUG = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    TESTING = False
+    
+    # API settings
+    API_TITLE = '{{ project_name }} API'
+    API_VERSION = 'v1'
+    OPENAPI_VERSION = '3.0.2'
+    API_SPEC_OPTIONS = {
+        'info': {
+            'description': '{{ description }}',
+            'version': '1.0.0',
+            'title': '{{ project_name }} API',
+        },
+        'security': [{"bearerAuth": []}],
+        'components': {
+            "securitySchemes": {
+                "bearerAuth": {
+                    "type": "http",
+                    "scheme": "bearer",
+                    "bearerFormat": "JWT"
+                }
+            }
+        }
+    }
+    
+    # Database settings
+    SQLALCHEMY_DATABASE_URI = os.getenv(
+        'DATABASE_URL',
+        f'sqlite:///{BASE_DIR}/app.db'
+    )
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ECHO = False
+    
+    # JWT settings
+    JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', SECRET_KEY)
+    JWT_ACCESS_TOKEN_EXPIRES = int(os.getenv('JWT_ACCESS_TOKEN_EXPIRES', 3600))
+    JWT_REFRESH_TOKEN_EXPIRES = int(os.getenv('JWT_REFRESH_TOKEN_EXPIRES', 604800))
+    
+    # CORS settings
+    CORS_HEADERS = ['Content-Type', 'Authorization']
+    CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
+    
+    # Pagination settings
+    DEFAULT_PAGE_SIZE = int(os.getenv('DEFAULT_PAGE_SIZE', 10))
+    MAX_PAGE_SIZE = int(os.getenv('MAX_PAGE_SIZE', 100))
+    
+    # Logging settings
+    LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+    LOG_FORMAT = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    LOG_FILE = os.getenv('LOG_FILE', str(BASE_DIR / 'logs' / 'app.log'))
+    
+    # File upload settings
+    MAX_CONTENT_LENGTH = int(os.getenv('MAX_CONTENT_LENGTH', 16 * 1024 * 1024))  # 16MB
+    UPLOAD_FOLDER = os.getenv('UPLOAD_FOLDER', str(BASE_DIR / 'uploads'))
+    
+    # Cache settings
+    CACHE_TYPE = os.getenv('CACHE_TYPE', 'simple')
+    CACHE_DEFAULT_TIMEOUT = int(os.getenv('CACHE_DEFAULT_TIMEOUT', 300))
+    
+    # Rate limiting
+    RATELIMIT_DEFAULT = os.getenv('RATELIMIT_DEFAULT', '200 per day;50 per hour')
+    RATELIMIT_STORAGE_URL = os.getenv('RATELIMIT_STORAGE_URL', 'memory://')
+
+class DevelopmentConfig(Config):
+    """Development configuration."""
+    DEBUG = True
+    SQLALCHEMY_ECHO = True
+    LOG_LEVEL = 'DEBUG'
+
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
+    WTF_CSRF_ENABLED = False
+    LOG_LEVEL = 'DEBUG'
+
+class ProductionConfig(Config):
+    """Production configuration."""
+    DEBUG = False
+    SQLALCHEMY_ECHO = False
+    LOG_LEVEL = 'WARNING'
+
+# Configuration dictionary
+config = {
+    'development': DevelopmentConfig,
+    'testing': TestingConfig,
+    'production': ProductionConfig,
+    'default': DevelopmentConfig
+}
+
+def get_config():
+    """Get the appropriate configuration based on environment."""
+    env = os.getenv('FLASK_ENV', 'development')
+    return config.get(env, config['default']) 

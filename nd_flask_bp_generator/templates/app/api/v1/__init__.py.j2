@@ -1,0 +1,13 @@
+from flask import Blueprint
+from flask_restx import Api
+
+api_bp = Blueprint('api_v1', __name__)
+api_v1 = Api(api_bp, version='1.0', title='API v1', description='API v1 endpoints')
+
+def init_app(app):
+    """Initialize the API v1 blueprint."""
+    from app.api.v1.endpoints import health
+    api_v1.add_namespace(health.ns)
+    app.register_blueprint(api_bp, url_prefix='/api/v1')
+
+from app.api.v1 import endpoints  # noqa 

@@ -1,0 +1,14 @@
+from flask_restx import Resource
+
+from app.api.v1 import api_v1
+
+ns = api_v1.namespace('health', description='Health check operations')
+
+
+@ns.route('/')
+class Health(Resource):
+    """Health check endpoint."""
+
+    def get(self):
+        """Return health status."""
+        return {'status': 'ok'}, 200 
