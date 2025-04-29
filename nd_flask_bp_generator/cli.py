@@ -8,6 +8,7 @@ from typing import Dict, Any
 import click
 import yaml
 from jinja2 import Environment, FileSystemLoader
+import subprocess
 
 TEMPLATES_DIR = Path(__file__).parent / "templates"
 DEFAULT_CONFIG = {
@@ -34,7 +35,10 @@ DEFAULT_CONFIG = {
 def create_venv(project_path):
     """Create a virtual environment for the project."""
     venv_path = project_path / "venv"
-    os.system(f"python3 -m venv {venv_path}")
+    result = subprocess.run(["python3", "-m", "venv", str(venv_path)], 
+                          capture_output=True, text=True)
+    if result.returncode != 0:
+        raise Exception(f"Failed to create virtual environment: {result.stderr}")
     return venv_path
 
 def create_project_structure(project_path, config):
@@ -95,17 +99,23 @@ def render_templates(project_path, config):
         ("manage.py.j2", "manage.py"),
     ]
 
-    for template_name, output_path in templates:
-        template = env.get_template(template_name)
-        content = template.render(**config)
-        (project_path / output_path).write_text(content)
+    with click.progressbar(templates, label="Rendering templates") as bar:
+        for template_name, output_path in bar:
+            template = env.get_template(template_name)
+            content = template.render(**config)
+            (project_path / output_path).write_text(content)
 
-@click.command()
+@click.group()
+def cli():
+    """Flask boilerplate generator CLI."""
+    pass
+
+@cli.command("create")
 @click.argument("project_name")
 @click.option("--author", prompt="Author name", help="Project author name")
 @click.option("--email", prompt="Author email", help="Project author email")
 @click.option("--description", prompt="Project description", help="Project description")
-def main(project_name, author, email, description):
+def create_project(project_name, author, email, description):
     """Generate a Flask REST API boilerplate project."""
     config = DEFAULT_CONFIG.copy()
     config.update({
@@ -141,10 +151,32 @@ def main(project_name, author, email, description):
         click.echo("3. pip install -r requirements.txt")
         click.echo("4. python -m app")
         
+    except FileExistsError as e:
+        click.echo(f"Error: Directory or file already exists: {e}")
+    except PermissionError as e:
+        click.echo(f"Error: Permission denied: {e}")
     except Exception as e:
         click.echo(f"Error: {str(e)}")
         if project_path.exists():
             shutil.rmtree(project_path)
 
+@cli.command("run")
+@click.argument("project_name")
+@click.option("--host", default="127.0.0.1", help="Host to run the server on")
+@click.option("--port", default=5000, help="Port to run the server on")
+@click.option("--env", default="development", help="Environment (development/production)")
+def run_app(project_name, host, port, env):
+    """Run the Flask application."""
+    project_path = Path(project_name)
+    if not project_path.exists():
+        click.echo(f"Error: Project {project_name} not found.")
+        return
+    
+    click.echo(f"Running {project_name} in {env} mode...")
+    os.environ["FLASK_APP"] = "manage.py"
+    os.environ["FLASK_ENV"] = env
+    os.chdir(project_path)
+    os.system(f"flask run --host={host} --port={port}")
+
 if __name__ == "__main__":
-    main() 
+    cli() 

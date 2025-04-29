@@ -20,8 +20,10 @@ pip install -e .
 
 ## Usage
 
+### Creating a New Project
+
 ```bash
-nd-flask-bp <project_name> --author "Your Name" --email "your.email@example.com" --description "Project description"
+nd_bp create <project_name> --author "Your Name" --email "your.email@example.com" --description "Project description"
 ```
 
 The generator will:
@@ -31,9 +33,11 @@ The generator will:
 4. Generate all necessary files
 5. Initialize a Git repository
 
-## Project Structure
+### Running Your Project
 
-The generated project will have the following structure:
+```bash
+# Run with default settings (localhost:5000, development mode)
+nd_bp run <project_name>
 
 ```
 project_name/

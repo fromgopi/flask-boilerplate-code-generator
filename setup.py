@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "nd_bp=nd_flask_bp_generator.cli:main",
+            "nd_bp=nd_flask_bp_generator.cli:cli",
         ],
     },
     author="Your Name",
