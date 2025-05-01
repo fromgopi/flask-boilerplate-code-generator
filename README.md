@@ -1,6 +1,6 @@
-# Flask Boilerplate Generator
+# Flask Boilerplate Generator CLI
 
-A CLI tool to generate Flask REST API boilerplate code with SQLAlchemy, Marshmallow, and Jinja2 templates.
+A command-line tool to generate Flask boilerplate code with best practices and modern project structure.
 
 ## Features
 
@@ -15,58 +15,95 @@ A CLI tool to generate Flask REST API boilerplate code with SQLAlchemy, Marshmal
 ## Installation
 
 ```bash
-pip install -e .
+pip install nd-flask-bp-generator
 ```
 
 ## Usage
 
-### Creating a New Project
+### Create a new project
 
 ```bash
-nd_bp create <project_name> --author "Your Name" --email "your.email@example.com" --description "Project description"
+nd-flask-bp create my_project
 ```
 
-The generator will:
-1. Create a new project directory
-2. Set up the project structure
-3. Create a virtual environment
-4. Generate all necessary files
-5. Initialize a Git repository
-
-### Running Your Project
+### Run the project
 
 ```bash
-# Run with default settings (localhost:5000, development mode)
-nd_bp run <project_name>
+nd-flask-bp run my_project
+```
+
+## Project Structure
 
 ```
-project_name/
+my_project/
 ├── app/
-│   ├── __init__.py
-│   ├── config/
+│   ├── api/
+│   │   └── v1/
+│   │       ├── __init__.py
+│   │       ├── health.py
+│   │       └── routes.py
+│   ├── core/
+│   │   ├── __init__.py
 │   │   └── config.py
 │   ├── models/
-│   │   └── base.py
-│   ├── schemas/
-│   │   └── base.py
-│   └── routes/
-│       └── __init__.py
+│   │   └── __init__.py
+│   └── __init__.py
 ├── tests/
+│   └── __init__.py
 ├── .env
 ├── .gitignore
+├── manage.py
 ├── README.md
 └── requirements.txt
 ```
 
 ## Development
 
-To contribute to this project:
+### Setup Development Environment
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/nd-flask-bp-generator.git
+cd nd-flask-bp-generator
+```
+
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+3. Install development dependencies:
+```bash
+pip install -e ".[dev]"
+```
+
+### Running Tests
+
+```bash
+pytest
+```
+
+### Releasing a New Version
+
+1. Update the version in `setup.py`
+2. Run the release script:
+```bash
+./scripts/release.sh <version>
+```
+
+For example:
+```bash
+./scripts/release.sh 0.1.0
+```
+
+The script will:
+- Clean up old builds
+- Update the version in setup.py
+- Build the package
+- Upload to PyPI
+- Clean up build artifacts
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT License 
